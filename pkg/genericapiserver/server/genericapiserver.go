@@ -46,6 +46,7 @@ import (
 	"k8s.io/kubernetes/pkg/genericapiserver/registry/rest"
 	genericmux "k8s.io/kubernetes/pkg/genericapiserver/server/mux"
 	"k8s.io/kubernetes/pkg/genericapiserver/server/routes"
+	"runtime/debug"
 )
 
 // Info about an API group.
@@ -256,6 +257,8 @@ func (s *GenericAPIServer) InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo 
 
 // Exposes the given api group in the API.
 func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
+	glog.Infof("Inside InstallAPIGroup %+v", apiGroupInfo)
+	debug.PrintStack()
 	// Do not register empty group or empty version.  Doing so claims /apis/ for the wrong entity to be returned.
 	// Catching these here places the error  much closer to its origin
 	if len(apiGroupInfo.GroupMeta.GroupVersion.Group) == 0 {

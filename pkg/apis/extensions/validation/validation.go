@@ -38,6 +38,7 @@ import (
 	"k8s.io/kubernetes/pkg/security/podsecuritypolicy/seccomp"
 	psputil "k8s.io/kubernetes/pkg/security/podsecuritypolicy/util"
 )
+var ValidateNetworkName = apivalidation.NameIsDNSSubdomain
 
 func ValidateThirdPartyResourceUpdate(update, old *extensions.ThirdPartyResource) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -883,6 +884,46 @@ func ValidateNetworkPolicyUpdate(update, old *extensions.NetworkPolicy) field.Er
 	allErrs = append(allErrs, apivalidation.ValidateObjectMetaUpdate(&update.ObjectMeta, &old.ObjectMeta, field.NewPath("metadata"))...)
 	if !reflect.DeepEqual(update.Spec, old.Spec) {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "updates to networkpolicy spec are forbidden."))
+	}
+	return allErrs
+}
+
+// ValidateNetworkSpec tests if required fields in the network spec are set.
+func ValidateNetworkSpec(spec *extensions.NetworkSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// Make sure mandatory fields are present
+	if spec.Name == "" {
+		allErrs = append(allErrs, field.Required(fldPath, "must specify a name for the spec"))
+	}
+	if spec.Plugin == "" {
+		allErrs = append(allErrs, field.Required(fldPath, "must specify a Plugin name"))
+	}
+	cidrMatch := regexp.MustCompile("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3})?/(3[0-1]|2[0-9]|1[0-9]|[0-9])$")
+	if cidrMatch.MatchString(spec.CIDRMask) == false {
+		allErrs = append(allErrs, field.Required(fldPath, "CIDRMask must be of the form a.b.c.d/N"))
+	}
+
+	gatewayMatch := regexp.MustCompile("^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3})?$")
+	if gatewayMatch.MatchString(spec.Gateway) == false {
+		allErrs = append(allErrs, field.Required(fldPath, "Gateway must be of the form a.b.c.d"))
+	}
+	return allErrs
+}
+
+// ValidateNetwork validates a network.
+func ValidateNetwork(nw *extensions.Network) field.ErrorList {
+	allErrs := apivalidation.ValidateObjectMeta(&nw.ObjectMeta, true, ValidateNetworkName, field.NewPath("metadata"))
+	allErrs = append(allErrs, ValidateNetworkSpec(&nw.Spec, field.NewPath("spec"))...)
+	return allErrs
+}
+
+// ValidateNetworkUpdate determines if an update to a Network is valid.
+func ValidateNetworkUpdate(update, old *extensions.Network) field.ErrorList {
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, apivalidation.ValidateObjectMetaUpdate(&update.ObjectMeta, &old.ObjectMeta, field.NewPath("metadata"))...)
+	if !reflect.DeepEqual(update.Spec, old.Spec) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "updates to network spec are forbidden."))
 	}
 	return allErrs
 }

@@ -66,12 +66,14 @@ func RegisterDeepCopies(scheme *runtime.Scheme) error {
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_IngressSpec, InType: reflect.TypeOf(&IngressSpec{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_IngressStatus, InType: reflect.TypeOf(&IngressStatus{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_IngressTLS, InType: reflect.TypeOf(&IngressTLS{})},
+		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_Network, InType: reflect.TypeOf(&Network{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicy, InType: reflect.TypeOf(&NetworkPolicy{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyIngressRule, InType: reflect.TypeOf(&NetworkPolicyIngressRule{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyList, InType: reflect.TypeOf(&NetworkPolicyList{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyPeer, InType: reflect.TypeOf(&NetworkPolicyPeer{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyPort, InType: reflect.TypeOf(&NetworkPolicyPort{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicySpec, InType: reflect.TypeOf(&NetworkPolicySpec{})},
+		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkSpec, InType: reflect.TypeOf(&NetworkSpec{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_PodSecurityPolicy, InType: reflect.TypeOf(&PodSecurityPolicy{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_PodSecurityPolicyList, InType: reflect.TypeOf(&PodSecurityPolicyList{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_PodSecurityPolicySpec, InType: reflect.TypeOf(&PodSecurityPolicySpec{})},
@@ -548,6 +550,21 @@ func DeepCopy_extensions_IngressTLS(in interface{}, out interface{}, c *conversi
 	}
 }
 
+func DeepCopy_extensions_Network(in interface{}, out interface{}, c *conversion.Cloner) error {
+	{
+		in := in.(*Network)
+		out := out.(*Network)
+		out.TypeMeta = in.TypeMeta
+		if err := api.DeepCopy_api_ObjectMeta(&in.ObjectMeta, &out.ObjectMeta, c); err != nil {
+			return err
+		}
+		if err := DeepCopy_extensions_NetworkSpec(&in.Spec, &out.Spec, c); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
 func DeepCopy_extensions_NetworkPolicy(in interface{}, out interface{}, c *conversion.Cloner) error {
 	{
 		in := in.(*NetworkPolicy)
@@ -673,6 +690,25 @@ func DeepCopy_extensions_NetworkPolicySpec(in interface{}, out interface{}, c *c
 				}
 			}
 		}
+		return nil
+	}
+}
+
+func DeepCopy_extensions_NetworkSpec(in interface{}, out interface{}, c *conversion.Cloner) error {
+	{
+		in := in.(*NetworkSpec)
+		out := out.(*NetworkSpec)
+		out.Name = in.Name
+		out.Plugin = in.Plugin
+		if in.Args != nil {
+			in, out := &in.Args, &out.Args
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		} else {
+			out.Args = nil
+		}
+		out.CIDRMask = in.CIDRMask
+		out.Gateway = in.Gateway
 		return nil
 	}
 }

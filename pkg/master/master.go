@@ -305,10 +305,11 @@ type RESTStorageProvider interface {
 func (m *Master) InstallAPIs(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter generic.RESTOptionsGetter, restStorageProviders ...RESTStorageProvider) {
 	apiGroupsInfo := []genericapiserver.APIGroupInfo{}
 
+	glog.Infof("apiResourceConfigSource: %+v", apiResourceConfigSource)
 	for _, restStorageBuilder := range restStorageProviders {
 		groupName := restStorageBuilder.GroupName()
 		if !apiResourceConfigSource.AnyResourcesForGroupEnabled(groupName) {
-			glog.V(1).Infof("Skipping disabled API group %q.", groupName)
+			glog.Infof("Skipping disabled API group %q.", groupName)
 			continue
 		}
 		apiGroupInfo, enabled := restStorageBuilder.NewRESTStorage(apiResourceConfigSource, restOptionsGetter)
@@ -316,7 +317,7 @@ func (m *Master) InstallAPIs(apiResourceConfigSource genericapiserver.APIResourc
 			glog.Warningf("Problem initializing API group %q, skipping.", groupName)
 			continue
 		}
-		glog.V(1).Infof("Enabling API group %q.", groupName)
+		glog.Infof("Enabling API group %q.", groupName)
 
 		if postHookProvider, ok := restStorageBuilder.(genericapiserver.PostStartHookProvider); ok {
 			name, hook, err := postHookProvider.PostStartHook()

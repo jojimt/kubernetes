@@ -43,6 +43,8 @@ import (
 	"k8s.io/kubernetes/pkg/genericapiserver/registry/rest"
 
 	"github.com/emicklei/go-restful"
+	"github.com/golang/glog"
+	"runtime/debug"
 )
 
 type APIInstaller struct {
@@ -87,6 +89,8 @@ var errEmptyName = errors.NewBadRequest("name must be provided")
 func (a *APIInstaller) Install(ws *restful.WebService) (apiResources []metav1.APIResource, errors []error) {
 	errors = make([]error, 0)
 
+	glog.Infof("Install: %+v", a)
+	debug.PrintStack()
 	proxyHandler := (&handlers.ProxyHandler{
 		Prefix:     a.prefix + "/proxy/",
 		Storage:    a.group.Storage,
@@ -192,6 +196,7 @@ func (a *APIInstaller) registerResourceHandlers(path string, storage rest.Storag
 	admit := a.group.Admit
 	context := a.group.Context
 
+	glog.Infof("Registering %s ==> %+v", path, storage)
 	optionsExternalVersion := a.group.GroupVersion
 	if a.group.OptionsExternalVersion != nil {
 		optionsExternalVersion = *a.group.OptionsExternalVersion

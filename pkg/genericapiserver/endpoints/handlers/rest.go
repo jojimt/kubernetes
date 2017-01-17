@@ -353,6 +353,7 @@ func createHandler(r rest.NamedCreater, scope RequestScope, typer runtime.Object
 	return func(req *restful.Request, res *restful.Response) {
 		// For performance tracking purposes.
 		trace := utiltrace.New("Create " + req.Request.URL.Path)
+		trace := util.NewTrace("Create " + req.Request.URL.Path)
 		defer trace.LogIfLong(500 * time.Millisecond)
 
 		w := res.ResponseWriter

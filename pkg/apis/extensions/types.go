@@ -1109,3 +1109,28 @@ type NetworkPolicyList struct {
 
 	Items []NetworkPolicy
 }
+
+// +genclient=true
+
+type Network struct {
+	metav1.TypeMeta
+	// +optional
+	api.ObjectMeta
+
+	// Specification of the desired behavior for this Network.
+	Spec NetworkSpec
+}
+
+type NetworkSpec struct {
+	// Name of the network
+	Name string
+
+	// Vendor plugin name for this network
+	Plugin string
+	// +optional
+	Args []string
+
+	// Netmask for this network
+	CIDRMask string
+	Gateway string
+}

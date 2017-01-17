@@ -1796,6 +1796,7 @@ func ValidatePod(pod *api.Pod) field.ErrorList {
 func ValidatePodSpec(spec *api.PodSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	glog.Infof("Validating PodSpec %+v", spec)
 	allVolumes, vErrs := validateVolumes(spec.Volumes, fldPath.Child("volumes"))
 	allErrs = append(allErrs, vErrs...)
 	allErrs = append(allErrs, validateContainers(spec.Containers, allVolumes, fldPath.Child("containers"))...)
