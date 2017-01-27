@@ -3117,6 +3117,7 @@ func autoConvert_api_PodSpec_To_v1_PodSpec(in *api.PodSpec, out *PodSpec, s conv
 	} else {
 		out.Volumes = nil
 	}
+	// WARNING: in.Networks requires manual conversion: does not exist in peer-type
 	out.InitContainers = *(*[]Container)(unsafe.Pointer(&in.InitContainers))
 	out.Containers = *(*[]Container)(unsafe.Pointer(&in.Containers))
 	out.RestartPolicy = RestartPolicy(in.RestartPolicy)

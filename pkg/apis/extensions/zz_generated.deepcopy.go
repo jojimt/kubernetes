@@ -67,6 +67,7 @@ func RegisterDeepCopies(scheme *runtime.Scheme) error {
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_IngressStatus, InType: reflect.TypeOf(&IngressStatus{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_IngressTLS, InType: reflect.TypeOf(&IngressTLS{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_Network, InType: reflect.TypeOf(&Network{})},
+		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkList, InType: reflect.TypeOf(&NetworkList{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicy, InType: reflect.TypeOf(&NetworkPolicy{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyIngressRule, InType: reflect.TypeOf(&NetworkPolicyIngressRule{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_extensions_NetworkPolicyList, InType: reflect.TypeOf(&NetworkPolicyList{})},
@@ -565,6 +566,27 @@ func DeepCopy_extensions_Network(in interface{}, out interface{}, c *conversion.
 	}
 }
 
+func DeepCopy_extensions_NetworkList(in interface{}, out interface{}, c *conversion.Cloner) error {
+	{
+		in := in.(*NetworkList)
+		out := out.(*NetworkList)
+		out.TypeMeta = in.TypeMeta
+		out.ListMeta = in.ListMeta
+		if in.Items != nil {
+			in, out := &in.Items, &out.Items
+			*out = make([]Network, len(*in))
+			for i := range *in {
+				if err := DeepCopy_extensions_Network(&(*in)[i], &(*out)[i], c); err != nil {
+					return err
+				}
+			}
+		} else {
+			out.Items = nil
+		}
+		return nil
+	}
+}
+
 func DeepCopy_extensions_NetworkPolicy(in interface{}, out interface{}, c *conversion.Cloner) error {
 	{
 		in := in.(*NetworkPolicy)
@@ -709,6 +731,7 @@ func DeepCopy_extensions_NetworkSpec(in interface{}, out interface{}, c *convers
 		}
 		out.CIDRMask = in.CIDRMask
 		out.Gateway = in.Gateway
+		out.HostAccess = in.HostAccess
 		return nil
 	}
 }

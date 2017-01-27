@@ -109,6 +109,7 @@ func RegisterDeepCopies(scheme *runtime.Scheme) error {
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_NamespaceList, InType: reflect.TypeOf(&NamespaceList{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_NamespaceSpec, InType: reflect.TypeOf(&NamespaceSpec{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_NamespaceStatus, InType: reflect.TypeOf(&NamespaceStatus{})},
+		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_Network, InType: reflect.TypeOf(&Network{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_Node, InType: reflect.TypeOf(&Node{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_NodeAddress, InType: reflect.TypeOf(&NodeAddress{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_NodeAffinity, InType: reflect.TypeOf(&NodeAffinity{})},
@@ -1455,6 +1456,22 @@ func DeepCopy_api_NamespaceStatus(in interface{}, out interface{}, c *conversion
 	}
 }
 
+func DeepCopy_api_Network(in interface{}, out interface{}, c *conversion.Cloner) error {
+	{
+		in := in.(*Network)
+		out := out.(*Network)
+		out.Name = in.Name
+		if in.Routes != nil {
+			in, out := &in.Routes, &out.Routes
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		} else {
+			out.Routes = nil
+		}
+		return nil
+	}
+}
+
 func DeepCopy_api_Node(in interface{}, out interface{}, c *conversion.Cloner) error {
 	{
 		in := in.(*Node)
@@ -2304,6 +2321,17 @@ func DeepCopy_api_PodSpec(in interface{}, out interface{}, c *conversion.Cloner)
 					return err
 				}
 			}
+		}
+		if in.Networks != nil {
+			in, out := &in.Networks, &out.Networks
+			*out = make([]Network, len(*in))
+			for i := range *in {
+				if err := DeepCopy_api_Network(&(*in)[i], &(*out)[i], c); err != nil {
+					return err
+				}
+			}
+		} else {
+			out.Networks = nil
 		}
 		if in.InitContainers != nil {
 			in, out := &in.InitContainers, &out.InitContainers

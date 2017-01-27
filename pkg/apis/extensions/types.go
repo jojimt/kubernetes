@@ -1133,4 +1133,16 @@ type NetworkSpec struct {
 	// Netmask for this network
 	CIDRMask string
 	Gateway string
+	// Is this network accessible from the host
+	HostAccess bool
 }
+
+// NetworkList is a list of Network objects.
+type NetworkList struct {
+	metav1.TypeMeta
+	// +optional
+	metav1.ListMeta
+
+	Items []Network
+}
+

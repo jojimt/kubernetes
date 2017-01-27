@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package etcd
 
 import (
 	extensionsapi "k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/registry/extensions/networkpolicy"
+	"k8s.io/kubernetes/pkg/registry/extensions/network"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	genericregistry "k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -32,19 +32,19 @@ type REST struct {
 // NewREST returns a RESTStorage object that will work against network policies.
 func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
 	store := &genericregistry.Store{
-		NewFunc:     func() runtime.Object { return &extensionsapi.NetworkPolicy{} },
-		NewListFunc: func() runtime.Object { return &extensionsapi.NetworkPolicyList{} },
+		NewFunc:     func() runtime.Object { return &extensionsapi.Network{} },
+		NewListFunc: func() runtime.Object { return &extensionsapi.NetworkList{} },
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
-			return obj.(*extensionsapi.NetworkPolicy).Name, nil
+			return obj.(*extensionsapi.Network).Name, nil
 		},
-		PredicateFunc:     networkpolicy.MatchNetworkPolicy,
-		QualifiedResource: extensionsapi.Resource("networkpolicies"),
+		PredicateFunc:     network.MatchNetwork,
+		QualifiedResource: extensionsapi.Resource("networks"),
 
-		CreateStrategy: networkpolicy.Strategy,
-		UpdateStrategy: networkpolicy.Strategy,
-		DeleteStrategy: networkpolicy.Strategy,
+		CreateStrategy: network.Strategy,
+		UpdateStrategy: network.Strategy,
+		DeleteStrategy: network.Strategy,
 	}
-	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: networkpolicy.GetAttrs}
+	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: network.GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {
 		panic(err) // TODO: Propagate error up
 	}

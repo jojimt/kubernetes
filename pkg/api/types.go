@@ -193,6 +193,18 @@ const (
 	TerminationMessagePathDefault string = "/dev/termination-log"
 )
 
+// Network represents a network interface in a pod that may be accessed by any containers in the pod.
+type Network struct {
+	// Required: Each network in a pod must have a unique name.
+	Name string
+
+	// Routes specify the list of ip routes that would be directed to this network.
+	// If left unspecified, only the directly attached network traffic will be
+	// directed to this network. The first network is also implicitly the default route.
+	// +optional
+	Routes []string
+}
+
 // Volume represents a named volume in a pod that may be accessed by any containers in the pod.
 type Volume struct {
 	// Required: This must be a DNS_LABEL.  Each volume in a pod must have
@@ -1853,6 +1865,8 @@ const (
 // PodSpec is a description of a pod
 type PodSpec struct {
 	Volumes []Volume
+	// Networks attached to the pod
+	Networks []Network
 	// List of initialization containers belonging to the pod.
 	InitContainers []Container
 	// List of containers belonging to the pod.
