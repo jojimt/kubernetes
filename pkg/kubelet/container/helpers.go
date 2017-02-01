@@ -38,6 +38,14 @@ import (
 	"k8s.io/kubernetes/third_party/forked/golang/expansion"
 )
 
+// PodNWIntfSpec contains sufficient information to create a network interface via a plugin
+type PodNWIntfSpec struct {
+	IfName  string  // Name of the interface inside the pod
+	NetworkName  string  // Name reference for the attached network
+	Routes  []string  // Routes pointing at this interface
+	Args []string	// Args to be passed to plugin
+}
+
 // HandlerRunner runs a lifecycle handler for a container.
 type HandlerRunner interface {
 	Run(containerID ContainerID, pod *v1.Pod, container *v1.Container, handler *v1.Handler) (string, error)
@@ -281,5 +289,61 @@ func HasPrivilegedContainer(pod *v1.Pod) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func findDefaultRoute(routes []string) bool {
+	for _, r := range routes {
+		if strings.Compare(r, "0.0.0.0/0") == 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetPodNWSpec returns an ordered list of nw interface specs for the pod
+func GetPodNWSpec(pod *v1.Pod) []PodNWIntfSpec {
+
+	// if pod does not contain a network spec, use default
+	if len(pod.Spec.Networks) == 0 {
+		ifSpec := PodNWIntfSpec {
+				IfName: "eth0",
+				NetworkName: "default",
+				Routes: []string{"0.0.0.0/0"},
+			}
+		return []PodNWIntfSpec{ifSpec}
+	}
+
+	spec := make([]PodNWIntfSpec, 0, len(pod.Spec.Networks))
+
+	needDefRoute := true
+	for ix, n := range pod.Spec.Networks {
+		ifSpec := PodNWIntfSpec{}
+		ifSpec.IfName = fmt.Sprintf("eth%d", ix)
+		ifSpec.NetworkName = n.Name
+		ifSpec.Routes = n.Routes
+		spec = append(spec, ifSpec)
+
+		if needDefRoute {
+			needDefRoute = !findDefaultRoute(n.Routes)
+		}
+	}
+
+	if needDefRoute {
+		spec[0].Routes = append(spec[0].Routes, "0.0.0.0/0")
+	}
+
+	return spec
+}
+
+// IsDefaultNWSpec checks whether default networking is specified
+func IsDefaultNWSpec(nw []PodNWIntfSpec) bool {
+	if len(nw) == 1 {
+		if nw[0].NetworkName == "default" {
+			return true
+		}
+	}
+
 	return false
 }

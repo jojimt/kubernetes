@@ -166,6 +166,14 @@ func (plugin *cniNetworkPlugin) syncNetworkConfig() {
 	plugin.setDefaultNetwork(network)
 }
 
+func (plugin *cniNetworkPlugin) getNetwork(conf kubecontainer.PodNWIntfSpec) *cniNetwork {
+	defNW := plugin.getDefaultNetwork()
+	nc := defNW.NetworkConfig
+	nc.Network.Name = conf.NetworkName
+	network := &cniNetwork{name: conf.NetworkName, NetworkConfig: nc, CNIConfig: defNW.CNIConfig}
+	return network
+}
+
 func (plugin *cniNetworkPlugin) getDefaultNetwork() *cniNetwork {
 	plugin.RLock()
 	defer plugin.RUnlock()
@@ -189,7 +197,19 @@ func (plugin *cniNetworkPlugin) Name() string {
 	return CNIPluginName
 }
 
-func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID) error {
+func (plugin *cniNetworkPlugin) addSpecifiedNetworks(namespace, name, netnsPath string, id kubecontainer.ContainerID, nw []kubecontainer.PodNWIntfSpec) error {
+	for _, n := range nw {
+		cniNW := plugin.getNetwork(n)
+		_, err := cniNW.addToNetwork(name, namespace, id, netnsPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, nw []kubecontainer.PodNWIntfSpec) error {
 	if err := plugin.checkInitialized(); err != nil {
 		return err
 	}
@@ -204,12 +224,16 @@ func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubec
 		return err
 	}
 
-	_, err = plugin.getDefaultNetwork().addToNetwork(name, namespace, id, netnsPath)
-	if err != nil {
-		glog.Errorf("Error while adding to cni network: %s", err)
+	if kubecontainer.IsDefaultNWSpec(nw) {
+		_, err = plugin.getDefaultNetwork().addToNetwork(name, namespace, id, netnsPath)
+			if err != nil {
+			glog.Errorf("Error while adding to cni network: %s", err)
+			return err
+		}
 		return err
 	}
 
+	err = plugin.addSpecifiedNetworks(name, namespace, netnsPath, id, nw)
 	return err
 }
 

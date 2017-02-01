@@ -195,14 +195,14 @@ const (
 
 // Network represents a network interface in a pod that may be accessed by any containers in the pod.
 type Network struct {
-	// Required: Each network in a pod must have a unique name.
-	Name string
+        // Required: Each network in a pod must have a unique name.
+        Name string
 
-	// Routes specify the list of ip routes that would be directed to this network.
-	// If left unspecified, only the directly attached network traffic will be
-	// directed to this network. The first network is also implicitly the default route.
-	// +optional
-	Routes []string
+        // Routes specify the list of ip routes that would be directed to this network.
+        // If left unspecified, only the directly attached network traffic will be
+        // directed to this network. The first network is also implicitly the default route.
+        // +optional
+        Routes []string
 }
 
 // Volume represents a named volume in a pod that may be accessed by any containers in the pod.
@@ -1865,8 +1865,6 @@ const (
 // PodSpec is a description of a pod
 type PodSpec struct {
 	Volumes []Volume
-	// Networks attached to the pod
-	Networks []Network
 	// List of initialization containers belonging to the pod.
 	InitContainers []Container
 	// List of containers belonging to the pod.
@@ -2006,6 +2004,12 @@ const (
 	// PodQOSBestEffort is the BestEffort qos class.
 	PodQOSBestEffort PodQOSClass = "BestEffort"
 )
+
+type PodNetworkInterface struct {
+        Name string     // Name of the interface inside the pod
+        Network string  // Name of the attached network
+        IP  string      // IP address of this interface
+}
 
 // PodStatus represents information about the status of a pod. Status may trail the actual
 // state of a system.

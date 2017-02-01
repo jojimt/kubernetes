@@ -466,6 +466,14 @@ func Convert_api_PodTemplateSpec_To_v1_PodTemplateSpec(in *api.PodTemplateSpec, 
 	return nil
 }
 
+func Convert_v1_PodStatus_To_api_PodStatus(in *PodStatus, out *api.PodStatus, s conversion.Scope) error {
+	return autoConvert_v1_PodStatus_To_api_PodStatus(in, out, s)
+}
+
+func Convert_api_PodStatus_To_v1_PodStatus(in *api.PodStatus, out *PodStatus, s conversion.Scope) error {
+	return autoConvert_api_PodStatus_To_v1_PodStatus(in, out, s)
+}
+
 func Convert_v1_PodTemplateSpec_To_api_PodTemplateSpec(in *PodTemplateSpec, out *api.PodTemplateSpec, s conversion.Scope) error {
 	// TODO: sometime after we move init container to stable, remove these conversions
 	// If there is a beta annotation, copy to alpha key.

@@ -47,6 +47,14 @@ const (
 	NET_PLUGIN_CAPABILITY_SHAPING int = 1
 )
 
+// NWConfig provides sufficient information for a plugin to create and configure a
+// network interface
+type NWConfig struct {
+	Name string	// Name of the network
+	Args []string	// Args to pass opaquely to the plugin
+	Routes []string	// Routes pointing to this network
+}
+
 // Plugin is an interface to network plugins for the kubelet
 type NetworkPlugin interface {
 	// Init initializes the plugin.  This will be called exactly once
@@ -68,7 +76,7 @@ type NetworkPlugin interface {
 	// the pod has been created but before the other containers of the
 	// pod are launched.
 	// TODO: rename podInfraContainerID to sandboxID
-	SetUpPod(namespace string, name string, podInfraContainerID kubecontainer.ContainerID) error
+	SetUpPod(namespace string, name string, podInfraContainerID kubecontainer.ContainerID, networks []kubecontainer.PodNWIntfSpec) error
 
 	// TearDownPod is the method called before a pod's infra container will be deleted
 	// TODO: rename podInfraContainerID to sandboxID
@@ -223,7 +231,7 @@ func (plugin *NoopNetworkPlugin) Capabilities() utilsets.Int {
 	return utilsets.NewInt()
 }
 
-func (plugin *NoopNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID) error {
+func (plugin *NoopNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, nw []kubecontainer.PodNWIntfSpec) error {
 	return nil
 }
 

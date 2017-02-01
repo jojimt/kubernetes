@@ -118,3 +118,4 @@ kubernetes.tar.gz
 
 /bazel-*
 *.pyc
+*.out

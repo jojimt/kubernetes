@@ -232,6 +232,18 @@ type Volume struct {
 	VolumeSource `json:",inline" protobuf:"bytes,2,opt,name=volumeSource"`
 }
 
+// Network represents a network interface in a pod that may be accessed by any containers in the pod.
+type Network struct {
+        // Required: Each network in a pod must have a unique name.
+        Name string
+
+        // Routes specify the list of ip routes that would be directed to this network.
+        // If left unspecified, only the directly attached network traffic will be
+        // directed to this network. The first network is also implicitly the default route.
+        // +optional
+        Routes []string
+}
+
 // Represents the source of a volume to mount.
 // Only one of its members may be specified.
 type VolumeSource struct {
@@ -2096,6 +2108,10 @@ type PodSpec struct {
 	// More info: http://kubernetes.io/docs/user-guide/volumes
 	// +optional
 	Volumes []Volume `json:"volumes,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,1,rep,name=volumes"`
+
+	// Networks attached to the pod
+	Networks []Network `json:"networks,omitempty"`
+
 	// List of initialization containers belonging to the pod.
 	// Init containers are executed in order prior to containers being started. If any
 	// init container fails, the pod is considered to have failed and is handled according
@@ -2262,6 +2278,12 @@ const (
 	PodQOSBestEffort PodQOSClass = "BestEffort"
 )
 
+type PodNetworkInterface struct {
+	Name string	// Name of the interface inside the pod
+	Network string  // Name of the attached network
+	IP  string	// IP address of this interface
+}
+
 // PodStatus represents information about the status of a pod. Status may trail the actual
 // state of a system.
 type PodStatus struct {
@@ -2288,6 +2310,9 @@ type PodStatus struct {
 	// Empty if not yet allocated.
 	// +optional
 	PodIP string `json:"podIP,omitempty" protobuf:"bytes,6,opt,name=podIP"`
+
+	// Networks attached to this pod
+	PodNetworks []PodNetworkInterface `json:"podNetworks,omitempty"`
 
 	// RFC 3339 date and time at which the object was acknowledged by the Kubelet.
 	// This is before the Kubelet pulled the container image(s) for the pod.
