@@ -220,6 +220,17 @@ const (
 	NamespaceAll string = ""
 )
 
+// NetworkInterface represents a network interface in a pod that may be accessed by any of the containers in the pod.
+type NetworkInterface struct {
+	// Required: Each network in a pod must have a unique name. Refers to the Network object
+	Name string   `json:"name"`
+
+	// Specifies the name of the interface inside the pod.
+	// If left unspecified, defaults to ethX where X is the numberical order of the NetworkInterface.
+	// +optional
+	IfName string  `json:"ifname,omitempty"`
+}
+
 // Volume represents a named volume in a pod that may be accessed by any container in the pod.
 type Volume struct {
 	// Volume's name.
@@ -2261,6 +2272,11 @@ type PodSpec struct {
 	// More info: http://kubernetes.io/docs/user-guide/volumes
 	// +optional
 	Volumes []Volume `json:"volumes,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,1,rep,name=volumes"`
+
+	// Networks attached to the pod. If left empty, a single default network interface is assumed
+	// +optional
+	Networks []NetworkInterface `json:"networks,omitempty"`
+
 	// List of initialization containers belonging to the pod.
 	// Init containers are executed in order prior to containers being started. If any
 	// init container fails, the pod is considered to have failed and is handled according
@@ -2433,6 +2449,12 @@ const (
 	PodQOSBestEffort PodQOSClass = "BestEffort"
 )
 
+type PodNetworkInfo struct {
+	Network string  `json:"network"` // Name of the attached network
+	IfName string  `json:"ifname"` // Name of the interface inside the pod
+	IPAddresses  []string  `json:"ipaddresses"` // IP addresses of this interface
+}
+
 // PodStatus represents information about the status of a pod. Status may trail the actual
 // state of a system.
 type PodStatus struct {
@@ -2459,6 +2481,10 @@ type PodStatus struct {
 	// Empty if not yet allocated.
 	// +optional
 	PodIP string `json:"podIP,omitempty" protobuf:"bytes,6,opt,name=podIP"`
+
+	// Information about networks attached to the pod
+	// +optional
+	NetworkInfo []PodNetworkInfo `json:"podNetworkInfo,omitempty"`
 
 	// RFC 3339 date and time at which the object was acknowledged by the Kubelet.
 	// This is before the Kubelet pulled the container image(s) for the pod.
@@ -4378,4 +4404,7 @@ const (
 	// When the --failure-domains scheduler flag is not specified,
 	// DefaultFailureDomains defines the set of label keys used when TopologyKey is empty in PreferredDuringScheduling anti-affinity.
 	DefaultFailureDomains string = metav1.LabelHostname + "," + metav1.LabelZoneFailureDomain + "," + metav1.LabelZoneRegion
+
+	// DefaultNetworkName identifies the implicit network attached to each port when no network is explicitly specified.
+	DefaultNetworkName = "k8s-implicit-network"
 )

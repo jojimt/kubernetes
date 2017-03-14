@@ -3134,6 +3134,20 @@ func TestValidatePodSpec(t *testing.T) {
 			RestartPolicy: api.RestartPolicyAlways,
 			DNSPolicy:     api.DNSClusterFirst,
 		},
+		{ // Populate Networks.
+			Volumes:       []api.Volume{{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}}},
+			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net1", }, {Name: "example-net2", IfName: "pvt0"}},
+		},
+		{ // Populate with single explicit network.
+			Volumes:       []api.Volume{{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}}},
+			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net2", IfName: "example-eth0"}},
+		},
 	}
 	for i := range successCases {
 		if errs := ValidatePodSpec(&successCases[i], field.NewPath("field")); len(errs) != 0 {
@@ -3267,6 +3281,41 @@ func TestValidatePodSpec(t *testing.T) {
 			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
 			RestartPolicy: api.RestartPolicyAlways,
 			DNSPolicy:     api.DNSClusterFirst,
+		},
+		"host network and explicit networking": { 
+			Containers: []api.Container{
+				{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File",
+					Ports: []api.ContainerPort{
+						{HostPort: 8080, ContainerPort: 8080, Protocol: "TCP"}},
+				},
+			},
+			SecurityContext: &api.PodSecurityContext{
+				HostNetwork: true,
+			},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net2", IfName: "example-eth0"}},
+		},
+		"duplicate networks": { 
+			Volumes:       []api.Volume{{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}}},
+			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net1", }, {Name: "example-net1", IfName: "pvt0"}},
+		},
+		"duplicate ifnames": { 
+			Volumes:       []api.Volume{{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}}},
+			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net1", IfName: "pvt0" }, {Name: "example-net2", IfName: "pvt0"}},
+		},
+		"forbidden ifname": { 
+			Volumes:       []api.Volume{{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}}},
+			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent", TerminationMessagePolicy: "File"}},
+			RestartPolicy: api.RestartPolicyAlways,
+			DNSPolicy:     api.DNSClusterFirst,
+			Networks:      []api.NetworkInterface{{Name: "example-net1", IfName: "pvt0" }, {Name: "example-net2", IfName: "eth0"}},
 		},
 	}
 	for k, v := range failureCases {
@@ -8956,4 +9005,6 @@ func TestValidateFlexVolumeSource(t *testing.T) {
 			continue
 		}
 	}
+}
+func TestValidateNetworking(t *testing.T) {
 }

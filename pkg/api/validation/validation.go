@@ -1908,6 +1908,49 @@ func validateAffinity(affinity *api.Affinity, fldPath *field.Path) field.ErrorLi
 	return allErrs
 }
 
+func validateNetworking(spec *api.PodSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	ifNameRegex := regexp.MustCompile("^eth([0-9]+)$")
+	if len(spec.Networks) != 0 {
+		if spec.SecurityContext != nil {
+			if spec.SecurityContext.HostNetwork {
+				return field.ErrorList{field.Forbidden(fldPath.Child("networks"), "networks may not be specified when hostNetwork is set")}
+			}
+		}
+
+		allNetworks := sets.String{}
+		allIfNames := sets.String{}
+		for i, nwif := range spec.Networks {
+			idxPath := fldPath.Index(i)
+			if allNetworks.Has(nwif.Name) {
+				allErrs = append(allErrs, field.Duplicate(idxPath, nwif.Name))
+			} else {
+				allNetworks.Insert(nwif.Name)
+			}
+
+			if nwif.IfName == "" {
+				continue
+			}
+
+			namePath := idxPath.Child("ifname")
+			// if an ifname is specified, it cannot be of the form of the default ethX.
+			if ifNameRegex.MatchString(nwif.IfName) {
+				if nwif.IfName != fmt.Sprintf("eth%d", i) {
+					allErrs = append(allErrs, field.Forbidden(namePath,
+						 "ifname of the form ethX may not be explicitly specified. use a different name or leave blank"))
+				}
+			} else if allIfNames.Has(nwif.IfName) {
+				allErrs = append(allErrs, field.Duplicate(namePath, nwif.IfName))
+			} else {
+				allIfNames.Insert(nwif.IfName)
+			}
+		}
+	}
+
+	return allErrs
+}
+
 func validateTaintEffect(effect *api.TaintEffect, allowEmpty bool, fldPath *field.Path) field.ErrorList {
 	if !allowEmpty && len(*effect) == 0 {
 		return field.ErrorList{field.Required(fldPath, "")}
@@ -2025,6 +2068,7 @@ func ValidatePodSpec(spec *api.PodSpec, fldPath *field.Path) field.ErrorList {
 	allErrs = append(allErrs, ValidatePodSecurityContext(spec.SecurityContext, spec, fldPath, fldPath.Child("securityContext"))...)
 	allErrs = append(allErrs, validateImagePullSecrets(spec.ImagePullSecrets, fldPath.Child("imagePullSecrets"))...)
 	allErrs = append(allErrs, validateAffinity(spec.Affinity, fldPath.Child("affinity"))...)
+	allErrs = append(allErrs, validateNetworking(spec, fldPath)...)
 	if len(spec.ServiceAccountName) > 0 {
 		for _, msg := range ValidateServiceAccountName(spec.ServiceAccountName, false) {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("serviceAccountName"), spec.ServiceAccountName, msg))

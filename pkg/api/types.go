@@ -195,6 +195,17 @@ const (
 	TerminationMessagePathDefault string = "/dev/termination-log"
 )
 
+// NetworkInterface represents a network interface in a pod that may be accessed by any of the containers in the pod.
+type NetworkInterface struct {
+	// Required: Each network in a pod must have a unique name. Refers to the Network object
+	Name string
+
+	// Specifies the name of the interface inside the pod.
+	// If left unspecified, defaults to ethX where X is the numberical order of the NetworkInterface.
+	// +optional
+	IfName string
+}
+
 // Volume represents a named volume in a pod that may be accessed by any containers in the pod.
 type Volume struct {
 	// Required: This must be a DNS_LABEL.  Each volume in a pod must have
@@ -2021,6 +2032,11 @@ const (
 // PodSpec is a description of a pod
 type PodSpec struct {
 	Volumes []Volume
+
+	// Networks attached to the pod. If left empty, a single default network interface is assumed
+	// +optional
+	Networks []NetworkInterface
+
 	// List of initialization containers belonging to the pod.
 	InitContainers []Container
 	// List of containers belonging to the pod.
@@ -2167,6 +2183,12 @@ const (
 	PodQOSBestEffort PodQOSClass = "BestEffort"
 )
 
+type PodNetworkInfo struct {
+	Network string   // Name of the attached network
+	IfName  string   // Name of the interface inside the pod
+	IPAddresses      []string // IP addresses of this interface
+}
+
 // PodStatus represents information about the status of a pod. Status may trail the actual
 // state of a system.
 type PodStatus struct {
@@ -2185,6 +2207,9 @@ type PodStatus struct {
 	HostIP string
 	// +optional
 	PodIP string
+	// Information about networks attached to the pod
+	// +optional
+	NetworkInfo []PodNetworkInfo
 
 	// Date and time at which the object was acknowledged by the Kubelet.
 	// This is before the Kubelet pulled the container image(s) for the pod.
@@ -3820,4 +3845,7 @@ const (
 	// When the --failure-domains scheduler flag is not specified,
 	// DefaultFailureDomains defines the set of label keys used when TopologyKey is empty in PreferredDuringScheduling anti-affinity.
 	DefaultFailureDomains string = metav1.LabelHostname + "," + metav1.LabelZoneFailureDomain + "," + metav1.LabelZoneRegion
+
+	// DefaultNetworkName identifies the implicit network attached to each port when no network is explicitly specified.
+	DefaultNetworkName = "k8s-implicit-network"
 )

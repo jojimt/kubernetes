@@ -17,12 +17,15 @@ limitations under the License.
 package v1
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
+// DefaultNetworks specifies the implicit network interface added by default
+var DefaultNetworks = []NetworkInterface{{Name: DefaultNetworkName, IfName: "eth0"}}
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
 	RegisterDefaults(scheme)
 	return scheme.AddDefaultingFuncs(
@@ -173,6 +176,14 @@ func SetDefaults_Pod(obj *Pod) {
 		}
 	}
 }
+func SetDefaults_Networks(networks []NetworkInterface) {
+	for i, nw := range networks {
+		if nw.IfName == "" {
+			nw.IfName = fmt.Sprintf("eth%d", i)
+		}
+	}
+}
+
 func SetDefaults_PodSpec(obj *PodSpec) {
 	if obj.DNSPolicy == "" {
 		obj.DNSPolicy = DNSClusterFirst
@@ -193,6 +204,9 @@ func SetDefaults_PodSpec(obj *PodSpec) {
 	}
 	if obj.SchedulerName == "" {
 		obj.SchedulerName = DefaultSchedulerName
+	}
+	if obj.Networks != nil {
+		SetDefaults_Networks(obj.Networks)
 	}
 }
 func SetDefaults_Probe(obj *Probe) {

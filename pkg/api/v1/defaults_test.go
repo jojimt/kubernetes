@@ -892,3 +892,12 @@ func TestSetDefaultSchedulerName(t *testing.T) {
 		t.Errorf("Expected scheduler name: %+v\ngot: %+v\n", v1.DefaultSchedulerName, output.Spec.SchedulerName)
 	}
 }
+
+func TestSetDefaultNetworks(t *testing.T) {
+	pod := &v1.Pod{}
+
+	output := roundTrip(t, runtime.Object(pod)).(*v1.Pod)
+	if output.Spec.Networks != nil {
+		t.Errorf("Expected nil networks\ngot: %+v\n", output.Spec.Networks)
+	}
+}
