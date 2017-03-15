@@ -1146,3 +1146,37 @@ type NetworkPolicyList struct {
 	// Items is a list of schema objects.
 	Items []NetworkPolicy `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
+
+// Network describes an IP network that can be attached explicitly to a Pod
+// +genclient=true
+type Network struct {
+	metav1.TypeMeta `json:",inline"`
+	// +optional
+
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Specification of the desired behavior for this Network.
+	Spec NetworkSpec `json:"spec"`
+}
+
+// NetworkSpec specifies the attributes of a network object
+type NetworkSpec struct {
+	// Vendor plugin name for this network
+	Plugin string `json:"plugin"`
+
+	// Specifies whether this network is accessible to the node that hosts the pod
+	// +optional
+	HostAccessible string `json:"hostaccessible,omitempty"`
+}
+
+// Network List is a list of Network objects.
+type NetworkList struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard list metadata.
+	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
+	// +optional
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Items is a list of schema objects.
+	Items []Network `json:"items" protobuf:"bytes,2,rep,name=items"`
+}

@@ -30,6 +30,7 @@ func addDefaultingFuncs(scheme *runtime.Scheme) error {
 		SetDefaults_Deployment,
 		SetDefaults_ReplicaSet,
 		SetDefaults_NetworkPolicy,
+		SetDefaults_Network,
 	)
 }
 
@@ -134,5 +135,12 @@ func SetDefaults_NetworkPolicy(obj *NetworkPolicy) {
 				p.Protocol = &proto
 			}
 		}
+	}
+}
+
+func SetDefaults_Network(obj *Network) {
+	// Default the hostAccessible field to yes
+	if obj.Spec.Plugin != "" && obj.Spec.HostAccessible == "" {
+		obj.Spec.HostAccessible = "yes"
 	}
 }

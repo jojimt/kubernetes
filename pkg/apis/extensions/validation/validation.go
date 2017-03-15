@@ -931,3 +931,33 @@ func ValidateNetworkPolicyUpdate(update, old *extensions.NetworkPolicy) field.Er
 	}
 	return allErrs
 }
+
+func ValidateNetworkSpec(nws *extensions.NetworkSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if nws.Plugin == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("plugin"), "must specify a plugin name"))
+	}
+
+	if nws.HostAccessible != "" && nws.HostAccessible != "yes" && nws.HostAccessible != "no" {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("hostaccessible"), nws.HostAccessible, "valid values are yes|no"))
+	}
+
+	return allErrs
+}
+
+// ValidateNetwork validates a network.
+func ValidateNetwork(nw *extensions.Network) field.ErrorList {
+	allErrs := apivalidation.ValidateObjectMeta(&nw.ObjectMeta, true, apivalidation.NameIsDNSSubdomain, field.NewPath("metadata"))
+	allErrs = append(allErrs, ValidateNetworkSpec(&nw.Spec, field.NewPath("spec"))...)
+	return allErrs
+}
+
+// ValidateNetworkUpdate tests if an update to a Network is valid.
+func ValidateNetworkUpdate(update, old *extensions.Network) field.ErrorList {
+	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, apivalidation.ValidateObjectMetaUpdate(&update.ObjectMeta, &old.ObjectMeta, field.NewPath("metadata"))...)
+	if !reflect.DeepEqual(update.Spec, old.Spec) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "updates to network spec are forbidden."))
+	}
+	return allErrs
+}

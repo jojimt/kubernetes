@@ -2808,3 +2808,57 @@ func TestIsValidSysctlPattern(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateNetwork(t *testing.T) {
+
+	successCases := []extensions.Network{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+			Spec: extensions.NetworkSpec{
+				Plugin: "abc",
+				HostAccessible: "no",
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+			Spec: extensions.NetworkSpec{
+				Plugin: "abc",
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+			Spec: extensions.NetworkSpec{
+				Plugin: "abc",
+				HostAccessible: "yes",
+			},
+		},
+	}
+
+	// Success cases are expected to pass validation.
+	for k, v := range successCases {
+		if errs := ValidateNetwork(&v); len(errs) != 0 {
+			t.Errorf("Expected success for %d, got %v", k, errs)
+		}
+	}
+
+	errorCases := [] extensions.Network {
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+					Spec: extensions.NetworkSpec{
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "foo", Namespace: "bar"},
+					Spec: extensions.NetworkSpec{
+						Plugin: "abc",
+						HostAccessible: "bcd",
+					},
+				},
+			}
+	// Error cases are not expected to pass validation.
+	for i, network := range errorCases {
+		if errs := ValidateNetwork(&network); len(errs) == 0 {
+			t.Errorf("Expected failure for test: %d", i)
+		}
+	}
+}

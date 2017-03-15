@@ -1123,3 +1123,34 @@ type NetworkPolicyList struct {
 
 	Items []NetworkPolicy
 }
+
+// Network describes an IP network that can be attached explicitly to a Pod
+// +genclient=true
+type Network struct {
+        metav1.TypeMeta
+        // +optional
+
+        metav1.ObjectMeta
+
+        // Specification of the desired behavior for this Network.
+        Spec NetworkSpec
+}
+
+// NetworkSpec specifies the attributes of a network object
+type NetworkSpec struct {
+        // Vendor plugin name for this network
+        Plugin string
+
+        // Specifies whether this network is accessible to the node that hosts the pod
+        // +optional
+        HostAccessible string
+}
+
+// NetworkList is a list of Network objects.
+type NetworkList struct {
+	metav1.TypeMeta
+	// +optional
+	metav1.ListMeta
+
+	Items []Network
+}

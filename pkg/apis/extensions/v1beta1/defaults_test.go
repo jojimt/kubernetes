@@ -539,3 +539,17 @@ func newInt32(val int32) *int32 {
 	*p = val
 	return p
 }
+
+func TestDefault_Network(t *testing.T) {
+	nw := &Network{
+		Spec: NetworkSpec{
+			Plugin: "abc",
+		},
+	}
+
+	output := roundTrip(t, runtime.Object(nw))
+	nw2 := output.(*Network)
+	if nw2.Spec.HostAccessible != "yes" {
+		t.Errorf("Expected HostAccessible:yes, got: %s", nw2.Spec.HostAccessible)
+	}
+}
