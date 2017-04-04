@@ -46,6 +46,7 @@ const (
 	Jobs                       Resource = "jobs"
 	LimitRanges                Resource = "limitranges"
 	Namespaces                 Resource = "namespaces"
+	Networks                   Resource = "networks"
 	NetworkPolicys             Resource = "networkpolicies"
 	Nodes                      Resource = "nodes"
 	PersistentVolumes          Resource = "persistentvolumes"

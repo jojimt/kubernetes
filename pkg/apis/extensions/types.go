@@ -1126,6 +1126,7 @@ type NetworkPolicyList struct {
 
 // Network describes an IP network that can be attached explicitly to a Pod
 // +genclient=true
+
 type Network struct {
         metav1.TypeMeta
         // +optional

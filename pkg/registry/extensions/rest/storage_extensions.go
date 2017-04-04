@@ -37,6 +37,7 @@ import (
 	deploymentstore "k8s.io/kubernetes/pkg/registry/extensions/deployment/storage"
 	ingressstore "k8s.io/kubernetes/pkg/registry/extensions/ingress/storage"
 	networkpolicystore "k8s.io/kubernetes/pkg/registry/extensions/networkpolicy/storage"
+	networkstore "k8s.io/kubernetes/pkg/registry/extensions/network/storage"
 	pspstore "k8s.io/kubernetes/pkg/registry/extensions/podsecuritypolicy/storage"
 	replicasetstore "k8s.io/kubernetes/pkg/registry/extensions/replicaset/storage"
 	thirdpartyresourcestore "k8s.io/kubernetes/pkg/registry/extensions/thirdpartyresource/storage"
@@ -101,8 +102,13 @@ func (p RESTStorageProvider) v1beta1Storage(apiResourceConfigSource serverstorag
 		storage["replicasets/scale"] = replicaSetStorage.Scale
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("networkpolicies")) {
-		networkExtensionsStorage := networkpolicystore.NewREST(restOptionsGetter)
-		storage["networkpolicies"] = networkExtensionsStorage
+		networkPolicyExtensionsStorage := networkpolicystore.NewREST(restOptionsGetter)
+		storage["networkpolicies"] = networkPolicyExtensionsStorage
+	}
+	if apiResourceConfigSource.ResourceEnabled(version.WithResource("networks")) {
+		glog.V(1).Info("Enabling networks resource")
+		networkExtensionsStorage := networkstore.NewREST(restOptionsGetter)
+		storage["networks"] = networkExtensionsStorage
 	}
 
 	return storage

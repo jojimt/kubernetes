@@ -64,6 +64,7 @@ filegroup(
         "//pkg/registry/extensions/deployment:all-srcs",
         "//pkg/registry/extensions/ingress:all-srcs",
         "//pkg/registry/extensions/networkpolicy:all-srcs",
+        "//pkg/registry/extensions/network:all-srcs",
         "//pkg/registry/extensions/podsecuritypolicy:all-srcs",
         "//pkg/registry/extensions/replicaset:all-srcs",
         "//pkg/registry/extensions/rest:all-srcs",

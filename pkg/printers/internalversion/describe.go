@@ -111,6 +111,7 @@ func describerMap(c clientset.Interface) map[schema.GroupKind]printers.Describer
 
 		extensions.Kind("ReplicaSet"):                  &ReplicaSetDescriber{c},
 		extensions.Kind("NetworkPolicy"):               &NetworkPolicyDescriber{c},
+		extensions.Kind("Network"):                     &NetworkDescriber{c},
 		autoscaling.Kind("HorizontalPodAutoscaler"):    &HorizontalPodAutoscalerDescriber{c},
 		extensions.Kind("DaemonSet"):                   &DaemonSetDescriber{c},
 		extensions.Kind("Deployment"):                  &DeploymentDescriber{c, versionedClientsetForDeployment(c)},
@@ -553,6 +554,7 @@ func describePod(pod *api.Pod, events *api.EventList) (string, error) {
 			}
 		}
 		describeVolumes(pod.Spec.Volumes, w, "")
+		describeNetworks(pod.Spec.Networks, w, "")
 		w.Write(LEVEL_0, "QoS Class:\t%s\n", pod.Status.QOSClass)
 		printLabelsMultiline(w, "Node-Selectors", pod.Spec.NodeSelector)
 		printPodTolerationsMultiline(w, "Tolerations", pod.Spec.Tolerations)
@@ -573,6 +575,21 @@ func printControllers(annotation map[string]string) string {
 		}
 	}
 	return "<none>"
+}
+
+func describeNetworks(networks []api.NetworkInterface, w *PrefixWriter, space string) {
+	if networks == nil || len(networks) == 0 {
+		w.Write(LEVEL_0, "%sNetworks:\t<default>\n", space)
+		return
+	}
+	w.Write(LEVEL_0, "%sNetworks:\n", space)
+	for _, nwIf := range networks {
+		nameIndent := ""
+		if len(space) > 0 {
+			nameIndent = " "
+		}
+		w.Write(LEVEL_1, "%s%v\n", nameIndent, nwIf.Name)
+	}
 }
 
 func describeVolumes(volumes []api.Volume, w *PrefixWriter, space string) {
@@ -2626,6 +2643,32 @@ func describeNetworkPolicy(networkPolicy *extensions.NetworkPolicy) (string, err
 		w.Write(LEVEL_0, "Namespace:\t%s\n", networkPolicy.Namespace)
 		printLabelsMultiline(w, "Labels", networkPolicy.Labels)
 		printAnnotationsMultiline(w, "Annotations", networkPolicy.Annotations)
+
+		return nil
+	})
+}
+
+// NetworkDescriber generates information about a Network
+type NetworkDescriber struct {
+	clientset.Interface
+}
+
+func (d *NetworkDescriber) Describe(namespace, name string, describerSettings printers.DescriberSettings) (string, error) {
+	c := d.Extensions().Networks(namespace)
+
+	network, err := c.Get(name, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	return tabbedString(func(out io.Writer) error {
+		w := &PrefixWriter{out}
+		w.Write(LEVEL_0, "Name:\t%s\n", network.Name)
+		w.Write(LEVEL_0, "Namespace:\t%s\n", network.Namespace)
+		w.Write(LEVEL_0, "Plugin:\t%s\n", network.Spec.Plugin)
+		w.Write(LEVEL_0, "HostAccessible:\t%s\n", network.Spec.HostAccessible)
+		printLabelsMultiline(w, "Labels", network.Labels)
+		printAnnotationsMultiline(w, "Annotations", network.Annotations)
 
 		return nil
 	})

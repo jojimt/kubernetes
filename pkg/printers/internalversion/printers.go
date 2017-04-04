@@ -96,6 +96,7 @@ var (
 	podSecurityPolicyColumns         = []string{"NAME", "PRIV", "CAPS", "SELINUX", "RUNASUSER", "FSGROUP", "SUPGROUP", "READONLYROOTFS", "VOLUMES"}
 	clusterColumns                   = []string{"NAME", "STATUS", "AGE"}
 	networkPolicyColumns             = []string{"NAME", "POD-SELECTOR", "AGE"}
+	networkColumns                   = []string{"NAME", "AGE"}
 	certificateSigningRequestColumns = []string{"NAME", "AGE", "REQUESTOR", "CONDITION"}
 )
 
@@ -178,6 +179,8 @@ func AddHandlers(h *printers.HumanReadablePrinter) {
 	h.Handler(clusterColumns, nil, printClusterList)
 	h.Handler(networkPolicyColumns, nil, printNetworkPolicy)
 	h.Handler(networkPolicyColumns, nil, printNetworkPolicyList)
+	h.Handler(networkColumns, nil, printNetwork)
+	h.Handler(networkColumns, nil, printNetworkList)
 	h.Handler(roleColumns, nil, printRole)
 	h.Handler(roleColumns, nil, printRoleList)
 	h.Handler(roleBindingColumns, roleBindingWideColumns, printRoleBinding)
@@ -1836,6 +1839,19 @@ func printPodSecurityPolicyList(list *extensions.PodSecurityPolicyList, w io.Wri
 		}
 	}
 
+	return nil
+}
+
+func printNetwork(network *extensions.Network, w io.Writer, options printers.PrintOptions) error {
+	return printObjectMeta(network.ObjectMeta, w, options, true)
+}
+
+func printNetworkList(list *extensions.NetworkList, w io.Writer, options printers.PrintOptions) error {
+	for i := range list.Items {
+		if err := printNetwork(&list.Items[i], w, options); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -1148,11 +1148,11 @@ type NetworkPolicyList struct {
 }
 
 // Network describes an IP network that can be attached explicitly to a Pod
-// +genclient=true
 type Network struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	// +optional
-
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	// Specification of the desired behavior for this Network.

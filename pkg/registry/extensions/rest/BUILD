@@ -38,6 +38,7 @@ go_library(
         "//pkg/registry/extensions/deployment/storage:go_default_library",
         "//pkg/registry/extensions/ingress/storage:go_default_library",
         "//pkg/registry/extensions/networkpolicy/storage:go_default_library",
+        "//pkg/registry/extensions/network/storage:go_default_library",
         "//pkg/registry/extensions/podsecuritypolicy/storage:go_default_library",
         "//pkg/registry/extensions/replicaset/storage:go_default_library",
         "//pkg/registry/extensions/thirdpartyresource/storage:go_default_library",
