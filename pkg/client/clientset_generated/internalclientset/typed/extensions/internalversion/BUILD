@@ -18,6 +18,7 @@ go_library(
         "generated_expansion.go",
         "ingress.go",
         "networkpolicy.go",
+        "network.go",
         "podsecuritypolicy.go",
         "replicaset.go",
         "scale.go",
